@@ -2,10 +2,9 @@ import { type Request, type Response } from "express";
 import mongoose, { isValidObjectId, Types } from "mongoose";
 import MenuItem from "../models/menu.model.js";
 type MenuQueryFilter = {
-  category?: string;
-  search?: {
-    $regex: string;
-    $options: "i";
+  category?: Types.ObjectId;
+  $text?: {
+    $search: string;
   };
 };
 export const getMenuItems = async (
@@ -17,26 +16,6 @@ export const getMenuItems = async (
     const limit = parseInt(req.query.limit as string) || 10;
     const { category, search } = req.query;
     const queryCondition: MenuQueryFilter = {};
-
-    if (category) {
-      if (!isValidObjectId(category)) {
-        res.status(400).json({
-          success: false,
-          message: "Lỗi category! Category phải là UUID hợp lệ!",
-        });
-        return;
-      }
-      // chac chan category chinh la UUID -> string
-      const categoryStr = category as string;
-      queryCondition.category = categoryStr;
-    }
-    if (search) {
-      const searchStr = search as string;
-      queryCondition.search = {
-        $regex: searchStr,
-        $options: "i",
-      };
-    }
     // kiem tra page co phai la so hop le
     if (isNaN(page) || page <= 0) {
       res.status(400).json({
@@ -53,22 +32,46 @@ export const getMenuItems = async (
       });
       return;
     }
+    if (category) {
+      const categoryStr = category as string;
+      console.log("--- DEBUG CATEGORY ---");
+      console.log("Giá trị:", categoryStr);
+      console.log("Độ dài ký tự:", categoryStr.length); // Chuẩn phải là 24
+      console.log("----------------------");
+      if (!isValidObjectId(category)) {
+        res.status(400).json({
+          success: false,
+          message: "Lỗi category! Category phải là Object_ID hợp lệ!",
+        });
+        return;
+      }
+      // chac chan category chinh la UUID -> string
+      queryCondition.category = new Types.ObjectId(category as string);
+    }
+    if (search) {
+      const searchStr = search as string;
+      queryCondition.$text = {
+        $search: searchStr,
+      };
+    }
+    console.log(queryCondition);
     const skip = (page - 1) * limit;
     const [totalItems, items] = await Promise.all([
-      MenuItem.countDocuments(),
+      MenuItem.countDocuments(queryCondition),
       MenuItem.find(queryCondition)
         .populate("category")
         .skip(skip)
         .limit(limit),
     ]);
-    const totalPages = Math.ceil(totalItems / limit);
-    if (page > totalPages) {
-      res.status(404).json({
-        success: false,
-        message: "Số trang không tồn tại!!!",
-      });
-      return;
-    }
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+    console.log(page, totalPages);
+    // if (page > totalPages) {
+    //   res.status(404).json({
+    //     success: false,
+    //     message: "Số trang không tồn tại!!!",
+    //   });
+    //   return;
+    // }
     res.status(200).json({
       success: true,
       pagination: {
@@ -81,9 +84,9 @@ export const getMenuItems = async (
       },
       data: items,
     });
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({
-      message: "Lỗi Server!!!",
+      message: `Lỗi khi tìm kiếm món ăn: ${err.message}`,
     });
   }
 };

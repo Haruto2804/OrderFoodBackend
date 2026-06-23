@@ -27,4 +27,5 @@ const MenuItemSchema: Schema = new Schema({
     ref: "Category",
   },
 });
+MenuItemSchema.index({ name: "text" });
 export default mongoose.model<IMenuItem>("MenuItem", MenuItemSchema);
