@@ -1,0 +1,71 @@
+# ====================================================================
+# DEPENDENCIES (Thư mục cài đặt thư viện - Cực kỳ nặng, không push lên)
+# ====================================================================
+node_modules/
+jspm_packages/
+web_modules/
+
+# ====================================================================
+# SECURITY / ENVS (Chứa thông tin bảo mật: Bí mật DB, mật khẩu, JWT token)
+# ====================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# ====================================================================
+# BUILD / OUTPUT (Thư mục sinh ra sau khi compile từ TypeScript sang JS)
+# ====================================================================
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# ====================================================================
+# LOGS (Các file ghi nhận lịch sử lỗi hoặc chạy hệ thống)
+# ====================================================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ====================================================================
+# IDE / EDITORS (Cấu hình riêng của các trình soạn thảo code)
+# ====================================================================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ====================================================================
+# OS / SYSTEM (Các file rác tự sinh bởi hệ điều hành Windows/MacOS)
+# ====================================================================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ====================================================================
+# TESTING / COVERAGE (Dữ liệu chạy test)
+# ====================================================================
+coverage/
+.nyc_output/
+
+# ====================================================================
+# OPTIONAL: LOCK FILES (Bật nếu bạn muốn bỏ qua lock files, nhưng thường 
+# khuyên khích giữ lại lock file để đồng bộ phiên bản giữa các máy)
+# ====================================================================
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
