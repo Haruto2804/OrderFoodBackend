@@ -13,6 +13,7 @@ import {
   deleteCategory,
   findById,
 } from "./controllers/category.controller.js";
+import { createOrder } from "./controllers/order.controller.js";
 const app = express();
 const PORT = 3000;
 app.use(express.json());
@@ -30,6 +31,8 @@ app.post("/api/categories", createCategory);
 app.put("/api/categories/:id", updateCategory);
 app.delete("/api/categories/:id", deleteCategory);
 
+//ORDER ROUTES
+app.post("/api/order", createOrder);
 mongoose
   .connect("mongodb://localhost:27017/Food_Server")
   .then(() => {
