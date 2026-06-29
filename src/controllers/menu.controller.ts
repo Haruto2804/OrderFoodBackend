@@ -1,12 +1,7 @@
 import { type Request, type Response } from "express";
-import mongoose, { isValidObjectId, Types } from "mongoose";
-import MenuItem from "../models/menu.model.js";
-type MenuQueryFilter = {
-  category?: Types.ObjectId;
-  $text?: {
-    $search: string;
-  };
-};
+import { isValidObjectId } from "mongoose";
+import menuService from "../services/menu.service.js";
+
 export const getMenuItems = async (
   req: Request,
   res: Response,
@@ -15,7 +10,7 @@ export const getMenuItems = async (
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const { category, search } = req.query;
-    const queryCondition: MenuQueryFilter = {};
+
     // kiem tra page co phai la so hop le
     if (isNaN(page) || page <= 0) {
       res.status(400).json({
@@ -32,50 +27,37 @@ export const getMenuItems = async (
       });
       return;
     }
-    if (category) {
-      if (!isValidObjectId(category)) {
+    const categoryStr = category ? (category as string) : undefined;
+    const searchStr = search ? (search as string) : undefined;
+
+    if (categoryStr) {
+      if (!isValidObjectId(categoryStr)) {
         res.status(400).json({
           success: false,
           message: "Lỗi category! Category phải là Object_ID hợp lệ!",
         });
         return;
       }
-      // chac chan category chinh la UUID -> string
-      queryCondition.category = new Types.ObjectId(category as string);
     }
-    if (search) {
-      const searchStr = search as string;
-      queryCondition.$text = {
-        $search: searchStr,
-      };
-    }
-    const skip = (page - 1) * limit;
-    const [totalItems, items] = await Promise.all([
-      MenuItem.countDocuments(queryCondition),
-      MenuItem.find(queryCondition)
-        .populate("category")
-        .skip(skip)
-        .limit(limit),
-    ]);
-    const totalPages = Math.ceil(totalItems / limit) || 1;
-    // if (page > totalPages) {
-    //   res.status(404).json({
-    //     success: false,
-    //     message: "Số trang không tồn tại!!!",
-    //   });
-    //   return;
-    // }
+
+    const result = await menuService.getMenuItems(
+      page,
+      limit,
+      categoryStr,
+      searchStr,
+    );
+
     res.status(200).json({
       success: true,
       pagination: {
-        currentPage: page,
-        limit: limit,
-        totalPages: totalPages,
-        totalItems: totalItems,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
+        currentPage: result.currentPage,
+        limit: result.limit,
+        totalPages: result.totalPages,
+        totalItems: result.totalItems,
+        hasNextPage: result.hasNextPage,
+        hasPrevPage: result.hasPrevPage,
       },
-      data: items,
+      data: result.items,
     });
   } catch (err: any) {
     res.status(500).json({
@@ -89,8 +71,7 @@ export const createMenuItem = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const newItem = new MenuItem(req.body);
-    const savedItem = await newItem.save();
+    const savedItem = await menuService.createMenuItem(req.body);
     res.status(201).json(savedItem);
   } catch (err) {
     res.status(400).json({
@@ -98,26 +79,15 @@ export const createMenuItem = async (
     });
   }
 };
+
 export const updateMenuItem = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { name, price, description, isAvailable, category } = req.body;
-    const { id } = req.params;
-    const result = await MenuItem.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          name,
-          description,
-          price,
-          isAvailable,
-          category,
-        },
-      },
-      { new: true, runValidators: true },
-    );
+    const id = req.params.id as string;
+    const result = await menuService.updateMenuItem(id, req.body);
+
     if (!result) {
       res
         .status(404)
@@ -131,13 +101,15 @@ export const updateMenuItem = async (
     });
   }
 };
+
 export const deleteMenuItem = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
-    const deletedItem = await MenuItem.findByIdAndDelete(id);
+    const id = req.params.id as string;
+    const deletedItem = await menuService.deleteMenuItem(id);
+
     if (!deletedItem) {
       res.status(404).json({ message: "Không tìm thấy món ăn này để xóa!" });
       return;

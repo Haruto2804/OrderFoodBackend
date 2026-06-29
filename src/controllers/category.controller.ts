@@ -1,12 +1,12 @@
-import { isValidObjectId } from "mongoose";
-import Category from "../models/category.model.js";
 import { type Request, type Response } from "express";
+import categoryService from "../services/category.service.js";
+
 export const getCategories = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const items = await Category.find();
+    const items = await categoryService.getCategories();
     res.status(200).json(items);
   } catch (err) {
     res.status(500).json({
@@ -14,13 +14,13 @@ export const getCategories = async (
     });
   }
 };
+
 export const createCategory = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const newCategory = new Category(req.body);
-    const savedItem = await newCategory.save();
+    const savedItem = await categoryService.createCategory(req.body);
     res.status(201).json(savedItem);
   } catch (err) {
     res.status(400).json({
@@ -28,23 +28,15 @@ export const createCategory = async (
     });
   }
 };
+
 export const updateCategory = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { name, description } = req.body;
-    const { id } = req.params;
-    const result = await Category.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          name,
-          description,
-        },
-      },
-      { new: true, runValidators: true },
-    );
+    const id = req.params.id as string;
+    const result = await categoryService.updateCategory(id, req.body);
+
     if (!result) {
       res
         .status(404)
@@ -58,13 +50,15 @@ export const updateCategory = async (
     });
   }
 };
+
 export const deleteCategory = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
-    const deletedItem = await Category.findByIdAndDelete(id);
+    const id = req.params.id as string;
+    const deletedItem = await categoryService.deleteCategory(id);
+
     if (!deletedItem) {
       res
         .status(404)
