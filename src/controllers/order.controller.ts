@@ -7,7 +7,7 @@ export const createOrder = async (
 ): Promise<void> => {
   try {
     const { customerName, phone, address, items } = req.body;
-    if ((!items && !Array.isArray(items)) || items.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
       res
         .status(400)
         .json({ success: false, message: "Giỏ hàng không được trống!" });
@@ -30,6 +30,7 @@ export const createOrder = async (
           success: false,
           message: `Món "${menuItemData.name}" hiện đã hết hàng, vui lòng chọn món khác!`,
         });
+        return;
       }
       caculatedTotalPrice += menuItemData.price * item.quantity;
     }

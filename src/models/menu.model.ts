@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-export interface IMenuItem extends Document {
+interface IMenuItem extends Document {
   name: string;
   price: number;
   description: string;

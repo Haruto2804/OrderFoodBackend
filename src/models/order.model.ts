@@ -4,7 +4,7 @@ interface IOrderItem {
   menuItem: Types.ObjectId;
   quantity: number;
 }
-export interface IOrder extends Document {
+interface IOrder extends Document {
   customerName: string;
   phone: string;
   address: string;

@@ -33,11 +33,6 @@ export const getMenuItems = async (
       return;
     }
     if (category) {
-      const categoryStr = category as string;
-      console.log("--- DEBUG CATEGORY ---");
-      console.log("Giá trị:", categoryStr);
-      console.log("Độ dài ký tự:", categoryStr.length); // Chuẩn phải là 24
-      console.log("----------------------");
       if (!isValidObjectId(category)) {
         res.status(400).json({
           success: false,
@@ -54,7 +49,6 @@ export const getMenuItems = async (
         $search: searchStr,
       };
     }
-    console.log(queryCondition);
     const skip = (page - 1) * limit;
     const [totalItems, items] = await Promise.all([
       MenuItem.countDocuments(queryCondition),
@@ -64,7 +58,6 @@ export const getMenuItems = async (
         .limit(limit),
     ]);
     const totalPages = Math.ceil(totalItems / limit) || 1;
-    console.log(page, totalPages);
     // if (page > totalPages) {
     //   res.status(404).json({
     //     success: false,
@@ -113,14 +106,14 @@ export const updateMenuItem = async (
     const { name, price, description, isAvailable, category } = req.body;
     const { id } = req.params;
     const result = await MenuItem.findByIdAndUpdate(
-      { _id: id },
+      id,
       {
         $set: {
-          name: name,
-          description: description,
-          price: price,
-          isAvailable: isAvailable,
-          category: category,
+          name,
+          description,
+          price,
+          isAvailable,
+          category,
         },
       },
       { new: true, runValidators: true },

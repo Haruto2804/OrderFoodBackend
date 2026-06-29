@@ -36,11 +36,11 @@ export const updateCategory = async (
     const { name, description } = req.body;
     const { id } = req.params;
     const result = await Category.findByIdAndUpdate(
-      { _id: id },
+      id,
       {
         $set: {
-          name: name,
-          description: description,
+          name,
+          description,
         },
       },
       { new: true, runValidators: true },
@@ -77,36 +77,5 @@ export const deleteCategory = async (
     });
   } catch (err) {
     res.status(500).json({ message: "Lỗi hệ thống khi xóa loại món ăn" });
-  }
-};
-export const findById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { category } = req.query;
-    // kiem tra id cua category co hop le hay k
-    if (!isValidObjectId(category)) {
-      res.status(400).json({
-        success: false,
-        message: "Category phải là 1 UUID hợp lệ!!1",
-      });
-      return;
-    }
-    const foundItem = Category.findById(category);
-    if (!foundItem) {
-      res.status(404).json({
-        success: false,
-        message: "Category phải là 1 UUID hợp lệ!!",
-      });
-      return;
-    }
-    res.status(200).json({
-      success: true,
-      message: "Tìm thấy thành công!",
-      data: foundItem,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Tìm thất bại!",
-    });
   }
 };
